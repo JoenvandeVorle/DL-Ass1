@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from hyperparameters import Hyperparameters
 
 
-def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> None:
+def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
     for epoch in range(epochs):
         model.train()
         i = 0
@@ -25,6 +25,12 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         # test on validation set
         avg_loss = test(val_data, model, hp)
         print(f'Validation Loss after epoch {epoch + 1}: {avg_loss:.4f}')
+
+    train_results = {
+        "avg_loss": avg_loss
+        # add more...
+    }
+    return train_results
 
 
 def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:

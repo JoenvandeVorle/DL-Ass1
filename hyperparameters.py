@@ -12,3 +12,13 @@ class Hyperparameters:
         self.window_size = window_size
         self.optimizer = optimizer
         self.loss_function = loss_function
+
+    def __str__(self):
+        return f"Hyperparameters(window_size={self.window_size}, optimizer={self.optimizer}, loss_function={self.loss_function})"
+
+    def to_dict(self):
+        return {
+            "window_size": self.window_size,
+            "optimizer": str(self.optimizer),
+            "loss_function": str(self.loss_function)
+        }
