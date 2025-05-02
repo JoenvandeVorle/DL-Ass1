@@ -37,7 +37,14 @@ if __name__ == "__main__":
         model.to(device)
 
         opt = optimizer(model.parameters(), lr=learning_rate)
-        hyperparameters = Hyperparameters(window_size, opt, loss_function)
+        hyperparameters = Hyperparameters(
+            window_size=window_size,
+            optimizer=opt,
+            initial_learning_rate=learning_rate,
+            loss_function=loss_function,
+            epochs=epochs,
+        )
         print(f"Training with params: {hyperparameters}")
+        print(f"Params dict: {hyperparameters.to_dict()}")
 
         train_results = train(model, train_data, val_data, epochs, hyperparameters)
