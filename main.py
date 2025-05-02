@@ -2,12 +2,14 @@ import sys
 
 import torch
 import torch.nn as nn
+import pandas as pd
 
 from model import Model
 from dataPreProcessing import load_data
 from train import train
 from hyperparameters import Hyperparameters
 from log_level import LogLevel
+from itertools import product
 
 
 HYPERPARAMETERS = {
@@ -28,16 +30,22 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     activation_function = nn.ReLU()
 
-    for window_size in HYPERPARAMETERS["window_sizes"]:
+    hyperparameter_combinations = product(
+        HYPERPARAMETERS["window_sizes"],
+        HYPERPARAMETERS["optimizers"],
+        HYPERPARAMETERS["initial_learning_rates"],
+        HYPERPARAMETERS["loss_functions"],
+        HYPERPARAMETERS["epochs"],
+    )
+
+    for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
         train_data, val_data = load_data(window_size, device)
-        for optimizer in HYPERPARAMETERS["optimizers"]:
-            for learning_rate in HYPERPARAMETERS["initial_learning_rates"]:
-                for loss_function in HYPERPARAMETERS["loss_functions"]:
-                    for epochs in HYPERPARAMETERS["epochs"]:
-                        print(f"Training with window size: {window_size}, optimizer: {optimizer}, learning_rate: {learning_rate}, loss function: {loss_function}")
-                        model = Model(window_size, activation_function)
-                        model.to(device)
-                        #model.display()
-                        opt = optimizer(model.parameters(), lr=learning_rate)
-                        hyperparameters = Hyperparameters(window_size, opt, loss_function)
-                        train(model, train_data, val_data, epochs, hyperparameters)
+
+        model = Model(window_size, activation_function)
+        model.to(device)
+
+        opt = optimizer(model.parameters(), lr=learning_rate)
+        hyperparameters = Hyperparameters(window_size, opt, loss_function)
+        print(f"Training with params: {hyperparameters}")
+
+        train_results = train(model, train_data, val_data, epochs, hyperparameters)

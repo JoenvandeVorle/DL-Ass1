@@ -43,6 +43,12 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
                     print('Early stopping...')
                 break
 
+    train_results = {
+        "avg_loss": avg_loss
+        # add more...
+    }
+    return train_results
+
 
 def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:
     model.eval()
