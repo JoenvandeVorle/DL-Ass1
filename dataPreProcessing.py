@@ -7,20 +7,21 @@ from hyperparameters import Hyperparameters as hp
 from const import SCALING_FACTOR
 
 class CustomDataset(Dataset):
-    def __init__(self, x, window_size):
+    def __init__(self, x, window_size: int, device: torch.device):
         self.x = x # data points
         self.window_size = window_size
+        self.device = device
 
     def __getitem__(self, index):
         # Return list of n input data points and the subsequent ground truth point
-        return torch.tensor(self.x[index : index + self.window_size]), torch.tensor(self.x[index + self.window_size + 1])
-
+        return torch.tensor(self.x[index : index + self.window_size], dtype=torch.float32, device=self.device), \
+            torch.tensor(self.x[index + self.window_size + 1], dtype=torch.float32, device=self.device)
+  
     def __len__(self):
         # Return the total number of samples
         return len(self.x)
 
-
-def load_data(windowsize: int) -> tuple[DataLoader, DataLoader]:
+def load_data(window_size: int, device: torch.device) -> tuple[DataLoader, DataLoader]:
     mat_data = scipy.io.loadmat('Xtrain.mat')
     # Load and squeeze the actual data
     data = mat_data['Xtrain']
@@ -28,14 +29,14 @@ def load_data(windowsize: int) -> tuple[DataLoader, DataLoader]:
     # normalization here?
     laser_data = laser_data/SCALING_FACTOR
 
-    dataset = CustomDataset(laser_data, windowsize)
+    dataset = CustomDataset(laser_data, window_size, device)
 
     # split training and validation 80:20
     # training_data, validation_data = random_split(dataset, [0.8, 0.2])
-    train_last_index = int(len(dataset) * 0.8 - WINDOW_SIZE - 1)
+    train_last_index = int(len(dataset) * 0.8 - window_size - 1)
     training_data = []
     validation_data = []
-    for i in range(len(dataset) - WINDOW_SIZE - 1):
+    for i in range(len(dataset) - window_size - 1):
         if i < train_last_index:
             training_data.append(dataset[i])
         else:

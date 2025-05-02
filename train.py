@@ -5,15 +5,11 @@ from torch.utils.data import DataLoader
 from hyperparameters import Hyperparameters
 
 
-def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters, device: torch.device) -> None:
-    model.train()
-
+def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> None:
     for epoch in range(epochs):
+        model.train()
         i = 0
-        for x, y in train_data:
-            inputs, target = x.to(device), y.to(device)
-            print (inputs.shape, outputs.shape)
-
+        for inputs, target in train_data:
             # Forward pass
             hp.optimizer.zero_grad()
             outputs = model(inputs)
@@ -27,16 +23,15 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             i += 1
 
         # test on validation set
-        avg_loss = test(val_data, model, hp, device)
+        avg_loss = test(val_data, model, hp)
         print(f'Validation Loss after epoch {epoch + 1}: {avg_loss:.4f}')
 
 
-def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters, device: torch.device) -> float:
+def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:
     model.eval()
     with torch.no_grad():
         losses = []
-        for x, y in test_set:
-            inputs, target = x.to(device), y.to(device)
+        for inputs, target in test_set:
             output = model(inputs)
             loss = hp.loss_function(output, target)
             losses.append(loss.item())

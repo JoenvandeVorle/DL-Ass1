@@ -12,7 +12,7 @@ class Model(nn.Module):
         self.window_size = window_size
         self.activation_function = activation_function
         
-        self.rnn = nn.RNN(window_size, 32, num_layers=1, batch_first=True)
+        self.rnn = nn.RNN(window_size, 32, num_layers=1, nonlinearity='relu', batch_first=True, dropout=0.2)
         self.fc1 = nn.Linear(32, 64)
         self.fc2 = nn.Linear(64, 32)
         # self.fc1 = nn.Linear(window_size, 32)
@@ -21,10 +21,9 @@ class Model(nn.Module):
         self.output = nn.Linear(32, 1)
 
     def forward(self, x):
-        h0 = torch.zeros(1, x.size(0), 32).to(x.device)
+        h0 = torch.zeros(x.size(0), 32, device=x.device)
         x, _ = self.rnn(x, h0)
 
-        x = x[:, -1, :]
 
         x = self.fc1(x)
         x = self.activation_function(x)
@@ -35,6 +34,7 @@ class Model(nn.Module):
 
         x = self.output(x)
         x = torch.sigmoid(x)
+        x = x[:, -1]
 
         return x
     
