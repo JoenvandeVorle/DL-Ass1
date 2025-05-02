@@ -24,12 +24,12 @@ if __name__ == "__main__":
         train_data, val_data = load_data(10, device)
         for optimizer in HYPERPARAMETERS["optimizers"]:
             for learning_rate in HYPERPARAMETERS["initial_learning_rates"]:
-                opt = optimizer(model.parameters(), lr=learning_rate)
                 for loss_function in HYPERPARAMETERS["loss_functions"]:
                     for epochs in HYPERPARAMETERS["epochs"]:
                         print(f"Training with window size: {window_size}, optimizer: {optimizer}, learning_rate: {learning_rate}, loss function: {loss_function}")
                         model = Model(window_size, activation_function)
                         model.to(device)
                         #model.display()
+                        opt = optimizer(model.parameters(), lr=learning_rate)
                         hyperparameters = Hyperparameters(window_size, opt, loss_function)
                         train(model, train_data, val_data, epochs, hyperparameters)
