@@ -9,9 +9,9 @@ from hyperparameters import Hyperparameters
 
 
 HYPERPARAMETERS = {
-    "window_sizes": [10],
-    "optimizers": [torch.optim.Adam],
-    "loss_functions": [nn.MSELoss()],
+    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
+    "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
+    "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
 }
 
 if __name__ == "__main__":
