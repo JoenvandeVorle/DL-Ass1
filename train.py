@@ -7,11 +7,12 @@ from hyperparameters import Hyperparameters
 
 def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters, device: torch.device) -> None:
     model.train()
-    
+
     for epoch in range(epochs):
         i = 0
         for x, y in train_data:
             inputs, target = x.to(device), y.to(device)
+            print (inputs.shape, outputs.shape)
 
             # Forward pass
             hp.optimizer.zero_grad()
@@ -28,7 +29,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         # test on validation set
         avg_loss = test(val_data, model, hp, device)
         print(f'Validation Loss after epoch {epoch + 1}: {avg_loss:.4f}')
-        
+
 
 def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters, device: torch.device) -> float:
     model.eval()
