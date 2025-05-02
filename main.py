@@ -45,6 +45,5 @@ if __name__ == "__main__":
             epochs=epochs,
         )
         print(f"Training with params: {hyperparameters}")
-        print(f"Params dict: {hyperparameters.to_dict()}")
 
         train_results = train(model, train_data, val_data, epochs, hyperparameters)

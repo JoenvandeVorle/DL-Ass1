@@ -6,14 +6,19 @@ from hyperparameters import Hyperparameters
 
 
 def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
+    train_losses = []
+    val_losses = []
+
     for epoch in range(epochs):
         model.train()
         i = 0
+        train_loss = 0
         for inputs, target in train_data:
             # Forward pass
             hp.optimizer.zero_grad()
             outputs = model(inputs)
             loss = hp.loss_function(outputs, target)
+            train_loss += loss.item()
 
             # Backward pass and optimization
             loss.backward()
@@ -22,13 +27,17 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
                 print(f'Epoch [{epoch + 1}/{epochs}], Step [{i}], Loss: {loss.item():.4f}')
             i += 1
 
-        # test on validation set
-        avg_loss = test(val_data, model, hp)
-        print(f'Validation Loss after epoch {epoch + 1}: {avg_loss:.4f}')
+        # test on validation set and calculate losses
+        avg_val_loss = test(val_data, model, hp)
+        avg_train_loss = train_loss / len(train_data)
+        train_losses.append(avg_train_loss)
+        val_losses.append(avg_val_loss)
+        print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}\n")
 
     train_results = {
-        "avg_loss": avg_loss
-        # add more...
+        "train_losses": train_losses,
+        "val_losses": val_losses,
+        # add more..?
     }
     return train_results
 
