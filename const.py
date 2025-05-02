@@ -1,2 +1,1 @@
 SCALING_FACTOR: int = 300
-EPOCHS: int = 10
