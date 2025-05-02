@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
 
-from const import EPOCHS
 from model import Model
 from dataPreProcessing import load_data
 from train import train
@@ -11,7 +10,9 @@ from hyperparameters import Hyperparameters
 HYPERPARAMETERS = {
     "window_sizes": [2, 5, 10, 15, 20, 30, 50],
     "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
+    "initial_learning_rates": [0.001, 0.01, 0.1],
     "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
+    "epochs": [100, 200, 300],
 }
 
 if __name__ == "__main__":
@@ -22,10 +23,13 @@ if __name__ == "__main__":
     for window_size in HYPERPARAMETERS["window_sizes"]:
         train_data, val_data = load_data(10, device)
         for optimizer in HYPERPARAMETERS["optimizers"]:
-            for loss_function in HYPERPARAMETERS["loss_functions"]:
-                print(f"Training with window size: {window_size}, optimizer: {optimizer}, loss function: {loss_function}")
-                model = Model(window_size, activation_function)
-                model.to(device)
-                #model.display()
-                hyperparameters = Hyperparameters(window_size, optimizer(model.parameters(), lr=0.001), loss_function)
-                train(model, train_data, val_data, EPOCHS, hyperparameters)
+            for learning_rate in HYPERPARAMETERS["initial_learning_rates"]:
+                opt = optimizer(model.parameters(), lr=learning_rate)
+                for loss_function in HYPERPARAMETERS["loss_functions"]:
+                    for epochs in HYPERPARAMETERS["epochs"]:
+                        print(f"Training with window size: {window_size}, optimizer: {optimizer}, learning_rate: {learning_rate}, loss function: {loss_function}")
+                        model = Model(window_size, activation_function)
+                        model.to(device)
+                        #model.display()
+                        hyperparameters = Hyperparameters(window_size, opt, loss_function)
+                        train(model, train_data, val_data, epochs, hyperparameters)
