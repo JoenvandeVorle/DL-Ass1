@@ -5,7 +5,6 @@ import numpy as np
 from hyperparameters import Hyperparameters as hp
 
 from const import SCALING_FACTOR
-WINDOW_SIZE = 5 # should probably use hyperparameters class
 
 class CustomDataset(Dataset):
     def __init__(self, x, window_size):
@@ -15,21 +14,21 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         # Return list of n input data points and the subsequent ground truth point
         return torch.tensor(self.x[index : index + self.window_size]), torch.tensor(self.x[index + self.window_size + 1])
-  
+
     def __len__(self):
         # Return the total number of samples
         return len(self.x)
-    
 
-def load_data() -> tuple[DataLoader, DataLoader]:
+
+def load_data(windowsize: int) -> tuple[DataLoader, DataLoader]:
     mat_data = scipy.io.loadmat('Xtrain.mat')
     # Load and squeeze the actual data
     data = mat_data['Xtrain']
     laser_data = np.squeeze(data)
-    # normalization here? 
+    # normalization here?
     laser_data = laser_data/SCALING_FACTOR
 
-    dataset = CustomDataset(laser_data, WINDOW_SIZE)
+    dataset = CustomDataset(laser_data, windowsize)
 
     # split training and validation 80:20
     # training_data, validation_data = random_split(dataset, [0.8, 0.2])

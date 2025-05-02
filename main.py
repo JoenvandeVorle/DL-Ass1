@@ -19,11 +19,12 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     activation_function = nn.ReLU()
 
-    train_data, val_data = load_data()
     for window_size in HYPERPARAMETERS["window_sizes"]:
+        train_data, val_data = load_data(10)
         for optimizer in HYPERPARAMETERS["optimizers"]:
             for loss_function in HYPERPARAMETERS["loss_functions"]:
                 print(f"Training with window size: {window_size}, optimizer: {optimizer}, loss function: {loss_function}")
                 model = Model(window_size, activation_function)
+                model.display()
                 hyperparameters = Hyperparameters(window_size, optimizer(model.parameters(), lr=0.001), loss_function)
                 train(model, train_data, val_data, EPOCHS, hyperparameters, device)
