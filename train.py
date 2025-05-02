@@ -1,33 +1,17 @@
 import torch
 import torch.nn as nn
-import scipy.io
+from torch.utils.data import DataLoader
 
-from const import SCALING_FACTOR
 from hyperparameters import Hyperparameters
 
 
-def load_data() -> torch.Tensor:
-    # Load the .mat file
-    mat_data = scipy.io.loadmat('Xtrain.mat')
-
-    # Load the actual data
-    data = mat_data['Xtrain']
-
-    scaled_data = data/SCALING_FACTOR
-
-    return scaled_data #, validation_data
-
-
-def train(model: nn.Module, data: torch.Tensor, epochs: int, hp: Hyperparameters) -> None:
+def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters, device: torch.device) -> None:
     model.train()
     
     for epoch in range(epochs):
-        for i in range(data.shape[0] - hp.window_size):
-            inputs = data[i:i + hp.window_size]
-            target = data[i + hp.window_size]
-
-            inputs = torch.tensor(inputs, dtype=torch.float32)
-            target = torch.tensor(target, dtype=torch.float32)
+        i = 0
+        for x, y in train_data:
+            inputs, target = x.to(device), y.to(device)
 
             # Forward pass
             hp.optimizer.zero_grad()
@@ -39,21 +23,21 @@ def train(model: nn.Module, data: torch.Tensor, epochs: int, hp: Hyperparameters
             hp.optimizer.step()
             if i % 100 == 0:
                 print(f'Epoch [{epoch + 1}/{epochs}], Step [{i}], Loss: {loss.item():.4f}')
+            i += 1
 
         # test on validation set
-        avg_loss = test(data, model, hp)
+        avg_loss = test(val_data, model, hp, device)
         print(f'Validation Loss after epoch {epoch + 1}: {avg_loss:.4f}')
         
 
-def test(test_set: torch.Tensor, model: nn.Module, hp: Hyperparameters) -> float:
+def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters, device: torch.device) -> float:
     model.eval()
     with torch.no_grad():
         losses = []
-        for i in range(test_set.shape[0] - hp.window_size):
-            inputs = test_set[i:i + hp.window_size]
-            inputs = torch.tensor(inputs, dtype=torch.float32)
+        for x, y in test_set:
+            inputs, target = x.to(device), y.to(device)
             output = model(inputs)
-            loss = hp.loss_function(output, test_set[i + hp.window_size])
+            loss = hp.loss_function(output, target)
             losses.append(loss.item())
         avg_loss = sum(losses) / len(losses)
     return avg_loss

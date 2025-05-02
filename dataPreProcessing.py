@@ -4,6 +4,7 @@ import scipy
 import numpy as np
 from hyperparameters import Hyperparameters as hp
 
+from const import SCALING_FACTOR
 WINDOW_SIZE = 5 # should probably use hyperparameters class
 
 class CustomDataset(Dataset):
@@ -19,23 +20,27 @@ class CustomDataset(Dataset):
         # Return the total number of samples
         return len(self.x)
     
-mat_data = scipy.io.loadmat('Xtrain.mat')
-# Load and squeeze the actual data
-data = mat_data['Xtrain']
-laser_data = np.squeeze(data)
 
-# normalization here? 
+def load_data() -> tuple[DataLoader, DataLoader]:
+    mat_data = scipy.io.loadmat('Xtrain.mat')
+    # Load and squeeze the actual data
+    data = mat_data['Xtrain']
+    laser_data = np.squeeze(data)
+    # normalization here? 
+    laser_data = laser_data/SCALING_FACTOR
 
-dataset = CustomDataset(laser_data, WINDOW_SIZE)
+    dataset = CustomDataset(laser_data, WINDOW_SIZE)
 
-# split training and validation 80:20
-training_data, validation_data = random_split(dataset,[0.8, 0.2])
-train_dataloader = DataLoader(training_data, batch_size=1)
-validation_data = DataLoader(validation_data, batch_size=1)
+    # split training and validation 80:20
+    training_data, validation_data = random_split(dataset, [0.8, 0.2])
+    train_dataloader = DataLoader(training_data, batch_size=1)
+    validation_data = DataLoader(validation_data, batch_size=1)
 
-print(len(training_data))
-print(len(validation_data))
+    print(len(training_data))
+    print(len(validation_data))
 
-train_features, train_label = next(iter(train_dataloader))
-print("features:" + str(train_features))
-print("labels:" + str(train_label))
+    train_features, train_label = next(iter(train_dataloader))
+    print("features:" + str(train_features))
+    print("labels:" + str(train_label))
+
+    return train_dataloader, validation_data

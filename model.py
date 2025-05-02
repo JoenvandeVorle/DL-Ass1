@@ -22,7 +22,9 @@ class Model(nn.Module):
 
     def forward(self, x):
         h0 = torch.zeros(1, x.size(0), 32).to(x.device)
-        x = self.rnn(x, h0)
+        x, _ = self.rnn(x, h0)
+
+        x = x[:, -1, :]
 
         x = self.fc1(x)
         x = self.activation_function(x)
