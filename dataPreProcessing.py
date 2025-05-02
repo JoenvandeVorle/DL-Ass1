@@ -5,6 +5,7 @@ import numpy as np
 from hyperparameters import Hyperparameters as hp
 
 from const import SCALING_FACTOR
+from log_level import LogLevel
 
 class CustomDataset(Dataset):
     def __init__(self, x, window_size: int, device: torch.device):
@@ -44,11 +45,13 @@ def load_data(window_size: int, device: torch.device) -> tuple[DataLoader, DataL
     train_dataloader = DataLoader(training_data, batch_size=1)
     validation_data = DataLoader(validation_data, batch_size=1)
 
-    print(len(training_data))
-    print(len(validation_data))
+    if LogLevel.LEVEL >= LogLevel.Level.VERBOSE:
+        print(len(training_data))
+        print(len(validation_data))
 
     train_features, train_label = next(iter(train_dataloader))
-    print("features:" + str(train_features))
-    print("labels:" + str(train_label))
+    if LogLevel.LEVEL >= LogLevel.Level.VERBOSE:
+        print("train_features:" + str(train_features))
+        print("train_label:" + str(train_label))
 
     return train_dataloader, validation_data

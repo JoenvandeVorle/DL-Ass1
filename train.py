@@ -3,13 +3,19 @@ import torch.nn as nn
 from torch.utils.data import DataLoader
 
 from hyperparameters import Hyperparameters
+from log_level import LogLevel
 
 
-def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
+def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> None:
+    epochs_since_last_improvement = 0
+    best_loss = float('inf')
     train_losses = []
     val_losses = []
 
     for epoch in range(epochs):
+        if LogLevel.LEVEL >= LogLevel.Level.INFO:
+            print(f'Epoch {epoch + 1}/{epochs}')
+
         model.train()
         i = 0
         train_loss = 0
@@ -23,8 +29,9 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             # Backward pass and optimization
             loss.backward()
             hp.optimizer.step()
-            if i % 100 == 0:
-                print(f'Epoch [{epoch + 1}/{epochs}], Step [{i}], Loss: {loss.item():.4f}')
+            if LogLevel.LEVEL >= LogLevel.Level.VERBOSE:
+                if i % 100 == 0:
+                    print(f'Step [{i}], Loss: {loss.item():.4f}')
             i += 1
 
         # test on validation set and calculate losses
@@ -33,6 +40,18 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         train_losses.append(avg_train_loss)
         val_losses.append(avg_val_loss)
         print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}\n")
+
+        if avg_val_loss < best_loss:
+            best_loss = avg_val_loss
+            epochs_since_last_improvement = 0
+            if LogLevel.LEVEL >= LogLevel.Level.INFO:
+                print(f'Validation Loss improved to {best_loss:.4f}')
+        else:
+            epochs_since_last_improvement += 1
+            if epochs_since_last_improvement > 10:
+                if LogLevel.LEVEL >= LogLevel.Level.INFO:
+                    print('Early stopping...')
+                break
 
     train_results = {
         "train_losses": train_losses,

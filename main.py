@@ -1,3 +1,5 @@
+import sys
+
 import torch
 import torch.nn as nn
 import pandas as pd
@@ -7,6 +9,8 @@ from dataPreProcessing import load_data
 from train import train
 from hyperparameters import Hyperparameters
 from itertools import product
+from log_level import LogLevel
+from itertools import product
 
 
 HYPERPARAMETERS = {
@@ -14,10 +18,15 @@ HYPERPARAMETERS = {
     "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
     "initial_learning_rates": [0.001, 0.01, 0.1],
     "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
-    "epochs": [100, 200, 300],
+    "epochs": [50, 100, 200, 300],
 }
 
 if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python main.py <log_level>")
+        sys.exit(1)
+    LogLevel.set_level(int(sys.argv[1]))
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     activation_function = nn.ReLU()
