@@ -1,4 +1,5 @@
 import sys
+import os
 
 import torch
 import torch.nn as nn
@@ -12,13 +13,23 @@ from itertools import product
 from log_level import LogLevel
 from itertools import product
 
+DATA_DIR = "data"
 
+# HYPERPARAMETERS = {
+#     "window_sizes": [2, 5, 10, 15, 20, 30, 50],
+#     "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
+#     "initial_learning_rates": [0.001, 0.01, 0.1],
+#     "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
+#     "epochs": [10, 20, 50, 100],
+# }
+
+# For quick testing
 HYPERPARAMETERS = {
-    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
-    "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
-    "initial_learning_rates": [0.001, 0.01, 0.1],
-    "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
-    "epochs": [50, 100, 200, 300],
+    "window_sizes": [2],
+    "optimizers": [torch.optim.Adam],
+    "initial_learning_rates": [0.001],
+    "loss_functions": [nn.MSELoss()],
+    "epochs": [15],
 }
 
 if __name__ == "__main__":
@@ -56,3 +67,7 @@ if __name__ == "__main__":
         print(f"Training with params: {hyperparameters}")
 
         train_results = train(model, train_data, val_data, epochs, hyperparameters)
+
+        os.makedirs(DATA_DIR, exist_ok=True)
+        dataframe = pd.DataFrame(train_results)
+        dataframe.to_csv(f"{DATA_DIR}/results_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}.csv", index=False)

@@ -4,8 +4,7 @@ __pycache__/
 *$py.class
 
 # Custom files
-images_live_calibration/
-calibration_data.npz
+data/
 
 # C extensions
 *.so

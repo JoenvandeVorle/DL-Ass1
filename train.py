@@ -4,9 +4,11 @@ from torch.utils.data import DataLoader
 
 from hyperparameters import Hyperparameters
 from log_level import LogLevel
+from numpy import arange
 
+PATIENCE = 10
 
-def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> None:
+def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
     epochs_since_last_improvement = 0
     best_loss = float('inf')
     train_losses = []
@@ -14,7 +16,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
 
     for epoch in range(epochs):
         if LogLevel.LEVEL >= LogLevel.Level.INFO:
-            print(f'Epoch {epoch + 1}/{epochs}')
+            print(f'\nEpoch {epoch + 1}/{epochs}')
 
         model.train()
         i = 0
@@ -39,7 +41,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         avg_train_loss = train_loss / len(train_data)
         train_losses.append(avg_train_loss)
         val_losses.append(avg_val_loss)
-        print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}\n")
+        print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}")
 
         if avg_val_loss < best_loss:
             best_loss = avg_val_loss
@@ -48,15 +50,15 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
                 print(f'Validation Loss improved to {best_loss:.4f}')
         else:
             epochs_since_last_improvement += 1
-            if epochs_since_last_improvement > 10:
+            if epochs_since_last_improvement > PATIENCE:
                 if LogLevel.LEVEL >= LogLevel.Level.INFO:
                     print('Early stopping...')
                 break
 
     train_results = {
+        "epoch" : arange(0, len(train_losses)),
         "train_losses": train_losses,
         "val_losses": val_losses,
-        # add more..?
     }
     return train_results
 
