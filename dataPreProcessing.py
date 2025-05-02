@@ -32,7 +32,15 @@ def load_data() -> tuple[DataLoader, DataLoader]:
     dataset = CustomDataset(laser_data, WINDOW_SIZE)
 
     # split training and validation 80:20
-    training_data, validation_data = random_split(dataset, [0.8, 0.2])
+    # training_data, validation_data = random_split(dataset, [0.8, 0.2])
+    train_last_index = int(len(dataset) * 0.8 - WINDOW_SIZE - 1)
+    training_data = []
+    validation_data = []
+    for i in range(len(dataset) - WINDOW_SIZE - 1):
+        if i < train_last_index:
+            training_data.append(dataset[i])
+        else:
+            validation_data.append(dataset[i])
     train_dataloader = DataLoader(training_data, batch_size=1)
     validation_data = DataLoader(validation_data, batch_size=1)
 
