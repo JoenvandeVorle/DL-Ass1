@@ -27,7 +27,7 @@ def load_data(window_size: int, device: torch.device) -> tuple[DataLoader, DataL
     # Load and squeeze the actual data
     data = mat_data['Xtrain']
     laser_data = np.squeeze(data)
-    # normalization here?
+    # normalization
     laser_data = laser_data/SCALING_FACTOR
 
     dataset = CustomDataset(laser_data, window_size, device)

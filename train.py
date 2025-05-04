@@ -24,8 +24,10 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         for inputs, target in train_data:
             # Forward pass
             hp.optimizer.zero_grad()
-            outputs = model(inputs)
-            loss = hp.loss_function(outputs, target)
+            output = 0
+            for input_point in inputs[0]:
+                output = model(input_point.unsqueeze(0))
+            loss = hp.loss_function(output, target)
             train_loss += loss.item()
 
             # Backward pass and optimization
@@ -46,7 +48,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         if avg_val_loss < best_loss:
             best_loss = avg_val_loss
             epochs_since_last_improvement = 0
-            if LogLevel.LEVEL >= LogLevel.Level.INFO:
+            if LogLevel.LEVEL > LogLevel.Level.INFO:
                 print(f'Validation Loss improved to {best_loss:.4f}')
         else:
             epochs_since_last_improvement += 1
@@ -68,7 +70,8 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:
     with torch.no_grad():
         losses = []
         for inputs, target in test_set:
-            output = model(inputs)
+            for input_point in inputs[0]:
+                output = model(input_point.unsqueeze(0))
             loss = hp.loss_function(output, target)
             losses.append(loss.item())
         avg_loss = sum(losses) / len(losses)
