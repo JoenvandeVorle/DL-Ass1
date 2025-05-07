@@ -14,9 +14,9 @@ class CustomDataset(Dataset):
         self.device = device
 
     def __getitem__(self, index):
-        # Return list of n input data points and the subsequent ground truth point
-        return torch.tensor(self.x[index : index + self.window_size], dtype=torch.float32, device=self.device), \
-            torch.tensor(self.x[index + self.window_size + 1], dtype=torch.float32, device=self.device)
+        # Return input data point and its successor ground truth point
+        return torch.tensor(self.x[index], dtype=torch.float32, device=self.device), \
+            torch.tensor(self.x[index + 1], dtype=torch.float32, device=self.device)
   
     def __len__(self):
         # Return the total number of samples
@@ -27,7 +27,7 @@ def load_data(window_size: int, device: torch.device) -> tuple[DataLoader, DataL
     # Load and squeeze the actual data
     data = mat_data['Xtrain']
     laser_data = np.squeeze(data)
-    # normalization here?
+    # normalization
     laser_data = laser_data/SCALING_FACTOR
 
     dataset = CustomDataset(laser_data, window_size, device)

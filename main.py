@@ -25,18 +25,21 @@ DATA_DIR = "data"
 
 # For quick testing
 HYPERPARAMETERS = {
-    "window_sizes": [2],
+    "window_sizes": [8, 16, 32],
     "optimizers": [torch.optim.Adam],
     "initial_learning_rates": [0.001],
     "loss_functions": [nn.MSELoss()],
-    "epochs": [15],
+    "epochs": [25],
 }
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) > 2:
         print("Usage: python main.py <log_level>")
         sys.exit(1)
-    LogLevel.set_level(int(sys.argv[1]))
+    elif len(sys.argv) < 2:
+        LogLevel.set_level(4)
+    else:
+        LogLevel.set_level(int(sys.argv[1]))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -53,7 +56,7 @@ if __name__ == "__main__":
     for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
         train_data, val_data = load_data(window_size, device)
 
-        model = Model(window_size, activation_function)
+        model = Model(1, window_size)
         model.to(device)
 
         opt = optimizer(model.parameters(), lr=learning_rate)
@@ -71,3 +74,10 @@ if __name__ == "__main__":
         os.makedirs(DATA_DIR, exist_ok=True)
         dataframe = pd.DataFrame(train_results)
         dataframe.to_csv(f"{DATA_DIR}/results_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}.csv", index=False)
+
+        # Save weights
+        save_dir = "checkpoints"
+        os.makedirs(save_dir, exist_ok=True)
+
+        save_path = os.path.join(save_dir, "RNN_weights_win" + str(window_size) + ".pth")
+        torch.save(model.state_dict(), save_path)
