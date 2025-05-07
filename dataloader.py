@@ -15,9 +15,9 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         # Return input data point and its successor ground truth point
-        return torch.tensor(self.x[index], dtype=torch.float32, device=self.device), \
+        return torch.tensor(self.x[index:index + self.window_size], dtype=torch.float32, device=self.device), \
             torch.tensor(self.x[index + 1], dtype=torch.float32, device=self.device)
-  
+
     def __len__(self):
         # Return the total number of samples
         return len(self.x)

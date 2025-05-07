@@ -99,8 +99,9 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], float,
     mse_avg = 0
     with torch.no_grad():
         predictions = []
-        first_input = test_set[0][0].unsqueeze(0)
-        for data in test_set:
+        first_input = test_set.dataset[0][0]
+        print (f'first input: {first_input}')
+        for data, target in test_set:
             output = model(first_input)
             predictions.append(output.item())
             first_input = output.unsqueeze(0)

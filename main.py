@@ -8,12 +8,15 @@ import pandas as pd
 from model import Model
 from dataloader import load_data
 from train import train, predict
+from torch.utils.data import DataLoader
 from hyperparameters import Hyperparameters
 from itertools import product
 from log_level import LogLevel
 from itertools import product
 
 DATA_DIR = "data"
+CHECKPOINT = "checkpoints/RNN_weights_win8.pth"
+FINAL_WINDOW_SIZE = 8
 
 # HYPERPARAMETERS = {
 #     "window_sizes": [2, 5, 10, 15, 20, 30, 50],
@@ -25,26 +28,14 @@ DATA_DIR = "data"
 
 # For quick testing
 HYPERPARAMETERS = {
-   "window_sizes": [5],
+   "window_sizes": [8],
    "optimizers": [torch.optim.Adam],
    "initial_learning_rates": [0.001],
    "loss_functions": [nn.MSELoss()],
    "epochs": [15],
 }
 
-if __name__ == "__main__":
-    if len(sys.argv) > 2:
-        print("Usage: python main.py <log_level>")
-        sys.exit(1)
-    elif len(sys.argv) < 2:
-        LogLevel.set_level(4)
-    else:
-        LogLevel.set_level(int(sys.argv[1]))
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"Using device: {device}")
-    activation_function = nn.ReLU()
-
+def do_train():
     hyperparameter_combinations = product(
         HYPERPARAMETERS["window_sizes"],
         HYPERPARAMETERS["optimizers"],
@@ -83,4 +74,33 @@ if __name__ == "__main__":
         save_path = os.path.join(save_dir, "RNN_weights_win" + str(window_size) + ".pth")
         torch.save(model.state_dict(), save_path)
 
-    #predictions, test_mae_loss, test_mse_loss = predict(test_data, model)
+
+def do_predict():
+    train_data, val_data = load_data(FINAL_WINDOW_SIZE, device)
+    model = Model(1, FINAL_WINDOW_SIZE)
+    model.load_state_dict(torch.load(CHECKPOINT))
+    model.to(device)
+
+    outputs, mse, mae = predict(val_data, model)
+
+    results_df = pd.DataFrame(outputs)
+    results_df.to_csv(f"{DATA_DIR}/predictions.csv", index=False)
+    errors_df = pd.DataFrame({"MSE": mse, "MAE": mae})
+    errors_df.to_csv(f"{DATA_DIR}/errors.csv", index=False)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 2:
+        print("Usage: python main.py <log_level>")
+        sys.exit(1)
+    elif len(sys.argv) < 2:
+        LogLevel.set_level(4)
+    else:
+        LogLevel.set_level(int(sys.argv[1]))
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+    activation_function = nn.ReLU()
+
+    do_train()
+    # do_predict()
