@@ -6,7 +6,7 @@ import scipy
 import matplotlib.pyplot as plt
 
 from model import Model
-from dataPreProcessing import load_data
+from dataloader import load_data
 from const import SCALING_FACTOR
 
 window_size = 8

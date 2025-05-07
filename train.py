@@ -13,6 +13,8 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
     best_loss = float('inf')
     train_losses = []
     val_losses = []
+    mse_losses = []
+    mae_losses = []
 
     for epoch in range(epochs):
         if LogLevel.LEVEL >= LogLevel.Level.INFO:
@@ -39,10 +41,12 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             i += 1
 
         # test on validation set and calculate losses
-        avg_val_loss = test(val_data, model, hp)
+        avg_val_loss, avg_mse_loss, avg_mae_loss = test(val_data, model, hp)
         avg_train_loss = train_loss / len(train_data)
         train_losses.append(avg_train_loss)
         val_losses.append(avg_val_loss)
+        mse_losses.append(avg_mse_loss)
+        mae_losses.append(avg_mae_loss)
         print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}")
 
         if avg_val_loss < (best_loss - 0.001):
@@ -61,17 +65,27 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         "epoch" : arange(0, len(train_losses)),
         "train_losses": train_losses,
         "val_losses": val_losses,
+        "mse_losses": mse_losses,
+        "mae_losses": mae_losses,
     }
     return train_results
 
 
-def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:
+def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[float, float, float]:
     model.eval()
     with torch.no_grad():
         losses = []
+        mse_losses = []
+        mae_losses = []
         for inputs, target in test_set:
             output = model(inputs)
             loss = hp.loss_function(output, target)
+            mse_loss = nn.MSELoss()(output, target)
+            mae_loss = nn.L1Loss()(output, target)
             losses.append(loss.item())
+            mse_losses.append(mse_loss.item())
+            mae_losses.append(mae_loss.item())
         avg_loss = sum(losses) / len(losses)
-    return avg_loss
+        avg_mse_loss = sum(mse_losses) / len(mse_losses)
+        avg_mae_loss = sum(mae_losses) / len(mae_losses)
+    return avg_loss, avg_mse_loss, avg_mae_loss
