@@ -45,7 +45,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         val_losses.append(avg_val_loss)
         print(f"Finished epoch {epoch + 1}: train loss {avg_train_loss:.4f}, val loss {avg_val_loss:.4f}")
 
-        if avg_val_loss < best_loss:
+        if avg_val_loss < (best_loss - 0.001):
             best_loss = avg_val_loss
             epochs_since_last_improvement = 0
             if LogLevel.LEVEL > LogLevel.Level.INFO:
