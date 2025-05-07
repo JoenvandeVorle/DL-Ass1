@@ -7,7 +7,7 @@ import pandas as pd
 
 from model import Model
 from dataPreProcessing import load_data
-from train import train
+from train import train, predict
 from hyperparameters import Hyperparameters
 from itertools import product
 from log_level import LogLevel
@@ -81,3 +81,5 @@ if __name__ == "__main__":
 
         save_path = os.path.join(save_dir, "RNN_weights_win" + str(window_size) + ".pth")
         torch.save(model.state_dict(), save_path)
+
+    #predictions, test_mae_loss, test_mse_loss = predict(test_data, model)    
