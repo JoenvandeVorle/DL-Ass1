@@ -25,8 +25,8 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             # Forward pass
             hp.optimizer.zero_grad()
             output = 0
-            for input_point in inputs[0]:
-                output = model(input_point.unsqueeze(0))
+            # for input_point in inputs[0]:
+            output = model(inputs)
             loss = hp.loss_function(output, target)
             train_loss += loss.item()
 
@@ -70,8 +70,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> float:
     with torch.no_grad():
         losses = []
         for inputs, target in test_set:
-            for input_point in inputs[0]:
-                output = model(input_point.unsqueeze(0))
+            output = model(inputs)
             loss = hp.loss_function(output, target)
             losses.append(loss.item())
         avg_loss = sum(losses) / len(losses)

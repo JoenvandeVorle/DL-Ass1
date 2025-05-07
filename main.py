@@ -29,14 +29,17 @@ HYPERPARAMETERS = {
     "optimizers": [torch.optim.Adam],
     "initial_learning_rates": [0.001],
     "loss_functions": [nn.MSELoss()],
-    "epochs": [15],
+    "epochs": [25],
 }
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
+    if len(sys.argv) > 2:
         print("Usage: python main.py <log_level>")
         sys.exit(1)
-    LogLevel.set_level(int(sys.argv[1]))
+    elif len(sys.argv) < 2:
+        LogLevel.set_level(4)
+    else:
+        LogLevel.set_level(int(sys.argv[1]))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
