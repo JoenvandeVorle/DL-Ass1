@@ -8,7 +8,6 @@ import pandas as pd
 from model import Model
 from dataloader import load_data
 from train import train, predict
-from torch.utils.data import DataLoader
 from hyperparameters import Hyperparameters
 from itertools import product
 from log_level import LogLevel
@@ -47,7 +46,7 @@ def do_train():
     for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
         train_data, val_data = load_data(window_size, device)
 
-        model = Model(1, window_size)
+        model = Model(1, 10, window_size, 10)
         model.to(device)
 
         opt = optimizer(model.parameters(), lr=learning_rate)
@@ -71,7 +70,7 @@ def do_train():
         save_dir = "checkpoints"
         os.makedirs(save_dir, exist_ok=True)
 
-        save_path = os.path.join(save_dir, "RNN_weights_win" + str(window_size) + ".pth")
+        save_path = os.path.join(save_dir, f"RNN_weights_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}.pth")
         torch.save(model.state_dict(), save_path)
 
 
