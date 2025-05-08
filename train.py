@@ -23,13 +23,14 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
         model.train()
         i = 0
         train_loss = 0
-        for inputs, target in train_data:
+        for input_points, target in train_data:
             # Forward pass
             hp.optimizer.zero_grad()
-            output = 0
-            # for input_point in inputs[0]:
-            output = model(inputs)
-            loss = hp.loss_function(output, target)
+            outputs = model(input_points) # model returns shape (window_size, batch, 1)
+            # targets contains labels for all input points + the one at the end of the sequence that isn't used as input (y)
+            targets = input_points[0, 1:]
+            targets = torch.cat((targets, target))
+            loss = hp.loss_function(outputs, targets)
             train_loss += loss.item()
 
             # Backward pass and optimization

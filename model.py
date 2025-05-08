@@ -11,13 +11,13 @@ class Model(nn.Module):
         super(Model, self).__init__()
         self.window_size = window_size
 
-        self.rnn = nn.RNN(1, 1, num_layers=10, dropout=0.2, batch_first=True)
+        self.rnn = nn.RNN(1, 1, num_layers=1, dropout=0.2, batch_first=True)
         # self.fc1 = nn.Linear(window_size, 32)
         # self.fc2 = nn.Linear(32, 64)
         # self.fc3 = nn.Linear(64, 32)
 
     def forward(self, x):
-        h0 = torch.zeros((10, 1), device=x.device)
+        h0 = torch.zeros((1, x.shape[0], 1), device=x.device) # (num_layers, batch, output_size)
         x = x.T
         x, _ = self.rnn(x, h0.squeeze(0))
 
