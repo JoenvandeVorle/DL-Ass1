@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import pandas as pd
 
-from model import Model
+from model import RNN_Model, FeedForwardModel
 from dataloader import load_data
 from train import train, predict
 from hyperparameters import Hyperparameters
@@ -17,7 +17,7 @@ from const import SCALING_FACTOR
 from visualize import visualize_training, visualize_predictions
 
 DATA_DIR = "data"
-CHECKPOINT = "checkpoints/RNN_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
+CHECKPOINT = "checkpoints/FeedForward_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
 FINAL_WINDOW_SIZE = 5
 
 #HYPERPARAMETERS = {
@@ -49,7 +49,10 @@ def do_train():
     for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
         train_data, val_data = load_data(window_size, device)
 
-        model = Model(1, 10, window_size, 10)
+        # model = RNN_Model(1, 10, window_size, 3)
+        model = FeedForwardModel(window_size, 10, 3)
+
+        model.init_weights()
         model.to(device)
 
         opt = optimizer(model.parameters(), lr=learning_rate)
@@ -67,23 +70,26 @@ def do_train():
         os.makedirs(DATA_DIR, exist_ok=True)
         # save train results except for outputs
         training = pd.DataFrame(train_results)
-        training.to_csv(f"{DATA_DIR}/train_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.csv", index=False)
+        filename = f"{DATA_DIR}/{model.modelname}_train_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.csv"
+        training.to_csv(filename, index=False)
+        visualize_training(filename)
 
         # Save weights
         save_dir = "checkpoints"
         os.makedirs(save_dir, exist_ok=True)
 
-        save_path = os.path.join(save_dir, f"RNN_weights_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.pth")
+        save_path = os.path.join(save_dir, f"{model.modelname}_weights_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.pth")
         torch.save(model.state_dict(), save_path)
 
 
 def do_predict():
-    train_data, val_data = load_data(12, device)
-    model = Model(1, 10, 12, 10)
+    train_data, val_data = load_data(FINAL_WINDOW_SIZE, device)
+    # model = RNN_Model(1, 10, 1, 10)
+    model = FeedForwardModel(FINAL_WINDOW_SIZE, 10, 3)
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
-    outputs, targets, mse, mae = predict(val_data, model)
+    outputs, targets, mse, mae = predict(val_data, train_data, model)
     print(f"Mean Squared Error: {mse}")
     print(f"Mean Absolute Error: {mae}")
 
@@ -116,4 +122,3 @@ if __name__ == "__main__":
 
     # do_train()
     do_predict()
-    visualize_training(f"{DATA_DIR}/predictions.csv")
