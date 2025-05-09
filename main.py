@@ -14,7 +14,7 @@ from log_level import LogLevel
 from itertools import product
 
 DATA_DIR = "data"
-CHECKPOINT = "checkpoints/RNN_weights_win8.pth"
+CHECKPOINT = "checkpoints/RNN_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
 FINAL_WINDOW_SIZE = 8
 
 #HYPERPARAMETERS = {
@@ -76,11 +76,11 @@ def do_train():
 
 def do_predict():
     train_data, val_data = load_data(FINAL_WINDOW_SIZE, device)
-    model = Model(1, FINAL_WINDOW_SIZE)
+    model = Model(1, 10, FINAL_WINDOW_SIZE, 10)
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
-    outputs, mse, mae = predict(val_data, model)
+    outputs, mse, mae = predict(val_data, model, FINAL_WINDOW_SIZE)
 
     results_df = pd.DataFrame(outputs)
     results_df.to_csv(f"{DATA_DIR}/predictions.csv", index=False)
@@ -101,5 +101,5 @@ if __name__ == "__main__":
     print(f"Using device: {device}")
     activation_function = nn.ReLU()
 
-    do_train()
-    # do_predict()
+    # do_train()
+    do_predict()

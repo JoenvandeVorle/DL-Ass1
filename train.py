@@ -28,9 +28,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             hp.optimizer.zero_grad()
             outputs = model(input_points) # model returns shape (window_size, batch, 1)
             # targets contains labels for all input points + the one at the end of the sequence that isn't used as input (y)
-            targets = input_points[0, 1:]
-            targets = torch.cat((targets, target))
-            loss = hp.loss_function(outputs, targets)
+            loss = hp.loss_function(outputs, target)
             train_loss += loss.item()
 
             # Backward pass and optimization
@@ -92,7 +90,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
     return avg_loss, avg_mse_loss, avg_mae_loss
 
 
-def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], float, float]:
+def predict(test_set: DataLoader, model: nn.Module, window_size: int) -> tuple[list[float], float, float]:
     model.eval()
     mae_loss = nn.L1Loss()
     mse_loss = nn.MSELoss()
@@ -103,7 +101,7 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], float,
         first_input = test_set.dataset[0][0]
         print (f'first input: {first_input}')
         for data, target in test_set:
-            output = model(first_input)
+            output = model(first_input.unsqueeze(0))
             predictions.append(output.item())
             first_input = output.unsqueeze(0)
             mae_avg += mae_loss(output, data).item()
