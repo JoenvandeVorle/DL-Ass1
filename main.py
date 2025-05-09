@@ -17,13 +17,13 @@ DATA_DIR = "data"
 CHECKPOINT = "checkpoints/RNN_weights_win8.pth"
 FINAL_WINDOW_SIZE = 8
 
-HYPERPARAMETERS = {
-    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
-    "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
-    "initial_learning_rates": [0.001, 0.01, 0.1],
-    "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
-    "epochs": [10, 20, 50, 100],
-}
+#HYPERPARAMETERS = {
+#    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
+#    "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
+#    "initial_learning_rates": [0.001, 0.01, 0.1],
+#    "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
+#    "epochs": [10, 20, 50, 100],
+#}
 
 # Best
 HYPERPARAMETERS = {
