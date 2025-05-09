@@ -15,7 +15,7 @@ class CustomDataset(Dataset):
 
     def __getitem__(self, index):
         # Return input data point and its successor ground truth point
-        return torch.tensor(self.x[index:index + self.window_size], dtype=torch.float32, device=self.device), \
+        return torch.tensor(self.x[index - self.window_size : index], dtype=torch.float32, device=self.device), \
             torch.tensor(self.x[index + 1], dtype=torch.float32, device=self.device)
 
     def __len__(self):
@@ -33,15 +33,14 @@ def load_data(window_size: int, device: torch.device) -> tuple[DataLoader, DataL
     dataset = CustomDataset(laser_data, window_size, device)
 
     # split training and validation 80:20
-    # training_data, validation_data = random_split(dataset, [0.8, 0.2])
-    train_last_index = int(len(dataset) * 0.8 - window_size - 1)
     training_data = []
     validation_data = []
-    for i in range(len(dataset) - window_size - 1):
-        if i < train_last_index:
-            training_data.append(dataset[i])
-        else:
-            validation_data.append(dataset[i])
+    for i in range(window_size, (int)(len(dataset) * 0.8 - 1)):
+        training_data.append(dataset[i])
+        
+    for i in range((int)(len(dataset) * 0.8 - 1) + window_size, len(dataset) - 1):
+        validation_data.append(dataset[i])
+
     train_dataloader = DataLoader(training_data, batch_size=1)
     validation_data = DataLoader(validation_data, batch_size=1)
 
