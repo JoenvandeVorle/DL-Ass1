@@ -17,21 +17,21 @@ DATA_DIR = "data"
 CHECKPOINT = "checkpoints/RNN_weights_win8.pth"
 FINAL_WINDOW_SIZE = 8
 
-# HYPERPARAMETERS = {
-#     "window_sizes": [2, 5, 10, 15, 20, 30, 50],
-#     "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
-#     "initial_learning_rates": [0.001, 0.01, 0.1],
-#     "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
-#     "epochs": [10, 20, 50, 100],
-# }
+#HYPERPARAMETERS = {
+#    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
+#    "optimizers": [torch.optim.Adam, torch.optim.SGD, torch.optim.NAdam],
+#    "initial_learning_rates": [0.001, 0.01, 0.1],
+#    "loss_functions": [nn.MSELoss(), nn.L1Loss(), nn.SmoothL1Loss()],
+#    "epochs": [10, 20, 50, 100],
+#}
 
-# For quick testing
+# Best
 HYPERPARAMETERS = {
-   "window_sizes": [8],
-   "optimizers": [torch.optim.Adam],
+   "window_sizes": [5],
+   "optimizers": [torch.optim.NAdam],
    "initial_learning_rates": [0.001],
-   "loss_functions": [nn.MSELoss()],
-   "epochs": [15],
+   "loss_functions": [nn.L1Loss()],
+   "epochs": [50],
 }
 
 def do_train():
@@ -64,13 +64,13 @@ def do_train():
         os.makedirs(DATA_DIR, exist_ok=True)
         # save train results except for outputs
         training = pd.DataFrame(train_results)
-        training.to_csv(f"{DATA_DIR}/train_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}.csv", index=False)
+        training.to_csv(f"{DATA_DIR}/train_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.csv", index=False)
 
         # Save weights
         save_dir = "checkpoints"
         os.makedirs(save_dir, exist_ok=True)
 
-        save_path = os.path.join(save_dir, f"RNN_weights_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}.pth")
+        save_path = os.path.join(save_dir, f"RNN_weights_WS{window_size}_{optimizer.__name__}_LR{learning_rate}_{loss_function.__class__.__name__}_{epochs}.pth")
         torch.save(model.state_dict(), save_path)
 
 
