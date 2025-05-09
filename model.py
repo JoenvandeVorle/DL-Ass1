@@ -20,6 +20,8 @@ class RNN_Model(nn.Module):
 
         self.rnn = nn.RNN(input_size, hidden_size, num_layers=num_layers, dropout=0.2, batch_first=True)
         self.fc = nn.Linear(hidden_size, 1)
+        # ensure output is 0-1
+        # self.output = nn.Sigmoid()
 
     def forward(self, x):
         h0 = torch.zeros((self.num_layers, self.hidden_size), device=x.device)
@@ -29,6 +31,7 @@ class RNN_Model(nn.Module):
         # print (f"RNN output shape: {x.shape} -- h0 shape: {h0.shape}")
 
         x = self.fc(x[-1])
+        # x = self.output(x)
         return x
 
     def display(self):

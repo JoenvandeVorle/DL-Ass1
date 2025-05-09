@@ -57,9 +57,9 @@ def visualize_training(csv_path: str, output_dir: str = "plots") -> None:
     os.makedirs(output_dir, exist_ok=True)
     filename = os.path.basename(csv_path).replace(".csv", "_loss_plot.png")
     plt.savefig(os.path.join(output_dir, filename))
-    plt.show()
+    # plt.show()
 
-def visualize_predictions(predictions: list[float], targets: list[float], output_dir: str = "plots") -> None:
+def visualize_predictions(predictions: list[float], targets: list[float], filename: str = "predictions_vs_targets.png", output_dir: str = "plots") -> None:
 
     plt.figure(figsize=(10, 6))
     plt.plot(predictions, label="Predictions", color="blue", linewidth=2)
@@ -73,9 +73,8 @@ def visualize_predictions(predictions: list[float], targets: list[float], output
     plt.grid(True)
 
     os.makedirs(output_dir, exist_ok=True)
-    filename = "predictions_vs_targets.png"
     plt.savefig(os.path.join(output_dir, filename))
-    plt.show()
+    # plt.show()
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:

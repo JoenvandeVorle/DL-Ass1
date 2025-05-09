@@ -7,7 +7,7 @@ from log_level import LogLevel
 from numpy import arange
 from model import RNN_Model, FeedForwardModel
 
-PATIENCE = 10
+PATIENCE = 4
 
 def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
     epochs_since_last_improvement = 0
@@ -116,8 +116,10 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[f
                 if model.modelname == "RNN":
                     output = output.unsqueeze(0)
                 outputs = torch.cat((outputs, output), dim=1)
-                input = torch.tensor(outputs)
+                input = outputs
+            print (f"input: {input}")
             output = model(input)
+            print (f"output: {output}")
             predictions.append(output.item())
             targets.append(target.item())
             mae_avg += mae_loss(output, data).item()

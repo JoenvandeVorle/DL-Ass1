@@ -6,6 +6,11 @@ __pycache__/
 # Custom files
 data/
 checkpoints/
+WS4/
+WS8/
+WS16/
+WS32/
+plots/
 
 # C extensions
 *.so
