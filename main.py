@@ -18,7 +18,7 @@ from visualize import visualize_training, visualize_predictions
 
 DATA_DIR = "data"
 CHECKPOINT = "checkpoints/RNN_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
-FINAL_WINDOW_SIZE = 5
+FINAL_WINDOW_SIZE = 8
 
 #HYPERPARAMETERS = {
 #    "window_sizes": [2, 5, 10, 15, 20, 30, 50],
@@ -83,7 +83,7 @@ def do_predict():
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
-    outputs, targets, mse, mae = predict(val_data, model)
+    outputs, targets, mse, mae = predict(val_data, model, FINAL_WINDOW_SIZE)
     print(f"Mean Squared Error: {mse}")
     print(f"Mean Absolute Error: {mae}")
 
@@ -116,4 +116,3 @@ if __name__ == "__main__":
 
     # do_train()
     do_predict()
-    visualize_training(f"{DATA_DIR}/predictions.csv")
