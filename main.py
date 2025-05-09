@@ -13,6 +13,9 @@ from itertools import product
 from log_level import LogLevel
 from itertools import product
 
+from const import SCALING_FACTOR
+from visualize import visualize_training, visualize_predictions
+
 DATA_DIR = "data"
 CHECKPOINT = "checkpoints/RNN_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
 FINAL_WINDOW_SIZE = 5
@@ -80,11 +83,17 @@ def do_predict():
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
-    outputs, mse, mae = predict(val_data, model)
+    outputs, targets, mse, mae = predict(val_data, model)
     print(f"Mean Squared Error: {mse}")
     print(f"Mean Absolute Error: {mae}")
 
     os.makedirs(DATA_DIR, exist_ok=True)
+
+    # scale the output back up
+    outputs = [output * SCALING_FACTOR for output in outputs]
+    targets = [target * SCALING_FACTOR for target in targets]
+
+    visualize_predictions(outputs, targets)
 
     results_df = pd.DataFrame(outputs)
     results_df.to_csv(f"{DATA_DIR}/predictions.csv", index=False)
@@ -107,3 +116,4 @@ if __name__ == "__main__":
 
     # do_train()
     do_predict()
+    visualize_training(f"{DATA_DIR}/predictions.csv")

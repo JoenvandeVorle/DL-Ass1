@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import sys
 import os
 
-def visualize_results(csv_path: str, output_dir: str = "plots") -> None:
+def visualize_training(csv_path: str, output_dir: str = "plots") -> None:
     if not os.path.exists(csv_path):
         print(f"File {csv_path} not found.")
         sys.exit(1)
@@ -30,9 +30,27 @@ def visualize_results(csv_path: str, output_dir: str = "plots") -> None:
     plt.savefig(os.path.join(output_dir, filename))
     plt.show()
 
+
+def visualize_predictions(predictions: list[float], targets: list[float], output_dir: str = "plots") -> None:
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(predictions, label="Predictions", color="blue", linewidth=2)
+    plt.plot(targets, label="Targets", color="orange", linewidth=2)
+    plt.xlabel("Sample")
+    plt.ylabel("Value")
+    plt.title("Predictions vs Targets")
+    plt.legend()
+    plt.grid(True)
+
+    os.makedirs(output_dir, exist_ok=True)
+    filename = "predictions_vs_targets.png"
+    plt.savefig(os.path.join(output_dir, filename))
+    plt.show()
+
+
 if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python visualize.py <results_csv_path>")
         sys.exit(1)
 
-    visualize_results(sys.argv[1])
+    visualize_training(sys.argv[1])

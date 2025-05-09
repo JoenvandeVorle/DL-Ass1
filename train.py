@@ -92,7 +92,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
     return avg_loss, avg_mse_loss, avg_mae_loss
 
 
-def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], float, float]:
+def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[float], float, float]:
     model.eval()
     mae_loss = nn.L1Loss()
     mse_loss = nn.MSELoss()
@@ -100,16 +100,15 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], float,
     mse_avg = 0
     with torch.no_grad():
         predictions = []
-        first_input = test_set.dataset[0][0].unsqueeze(0)
-        print (f'first input: {first_input}')
+        targets = []
         for data, target in test_set:
-            output = model(first_input)
+            output = model(data)
             predictions.append(output.item())
-            first_input = output.unsqueeze(0)
+            targets.append(target.item())
             mae_avg += mae_loss(output, data).item()
             mse_avg += mse_loss(output, data).item()
         mae_avg /= len(test_set)
         mse_avg /= len(test_set)
         if LogLevel.LEVEL >= LogLevel.Level.INFO:
             print(f'MAE: {mae_avg:.4f}, MSE: {mse_avg:.4f}')
-    return predictions, mae_avg, mse_avg
+    return predictions, targets, mae_avg, mse_avg
