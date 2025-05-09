@@ -101,12 +101,27 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[f
     with torch.no_grad():
         predictions = []
         targets = []
+        i = 0
+        output = 0
+        outputs = None
         for data, target in test_set:
-            output = model(data)
+            if i == 0:
+                input = data
+                outputs = input
+            else:
+                # Pop and push
+                outputs = outputs[:, 1:]  # Assuming outputs is a 2D tensor
+                output_tensor = output.unsqueeze(1)  # Ensure the new output has the correct shape
+                outputs = torch.cat((outputs, output_tensor), dim=1)
+                input = torch.tensor(outputs)
+            print (f"Input: {input}")
+            output = model(input)
+            print (f"Output: {output}")
             predictions.append(output.item())
             targets.append(target.item())
             mae_avg += mae_loss(output, data).item()
             mse_avg += mse_loss(output, data).item()
+            i+= 1
         mae_avg /= len(test_set)
         mse_avg /= len(test_set)
         if LogLevel.LEVEL >= LogLevel.Level.INFO:

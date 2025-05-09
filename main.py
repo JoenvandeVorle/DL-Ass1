@@ -78,8 +78,8 @@ def do_train():
 
 
 def do_predict():
-    train_data, val_data = load_data(FINAL_WINDOW_SIZE, device)
-    model = Model(1, 10, FINAL_WINDOW_SIZE, 10)
+    train_data, val_data = load_data(12, device)
+    model = Model(1, 10, 12, 10)
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
