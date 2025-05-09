@@ -23,9 +23,11 @@ class Model(nn.Module):
     def forward(self, x):
         h0 = torch.zeros((self.num_layers, self.hidden_size), device=x.device)
         x = x.T
-        x, _ = self.rnn(x, h0)
+        x, _ = self.rnn(x, h0.squeeze(0))
 
         # print (f"RNN output shape: {x.shape} -- h0 shape: {h0.shape}")
+
+        x = self.fc(x[-1])
         return x
 
     def display(self):

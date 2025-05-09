@@ -29,7 +29,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             outputs = model(input_points) # model returns shape (window_size, batch, 1)
             # targets contains labels for all input points + the one at the end of the sequence that isn't used as input (y)
             targets = input_points[0, 1:]
-            targets = torch.cat((targets, target)).unsqueeze(1)
+            targets = torch.cat((targets, target))
             loss = hp.loss_function(outputs, targets)
             train_loss += loss.item()
 
@@ -115,7 +115,7 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[f
                 outputs = torch.cat((outputs, output_tensor), dim=1)
                 input = torch.tensor(outputs)
             print (f"Input: {input}")
-            output = model(input)[-1]
+            output = model(input)
             print (f"Output: {output}")
             predictions.append(output.item())
             targets.append(target.item())

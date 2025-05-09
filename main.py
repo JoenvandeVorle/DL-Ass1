@@ -49,7 +49,7 @@ def do_train():
     for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
         train_data, val_data = load_data(window_size, device)
 
-        model = Model(1, 1, window_size, 1)
+        model = Model(1, 10, window_size, 10)
         model.to(device)
 
         opt = optimizer(model.parameters(), lr=learning_rate)
