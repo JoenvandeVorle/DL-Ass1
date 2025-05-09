@@ -9,19 +9,17 @@ class RNN_Model(nn.Module):
     modelname = "RNN"
     input_size: int
     hidden_size: int
-    window_size: int
     num_layers: int
     activation_function: nn.Module
 
-    def __init__(self, input_size: int, hidden_size: int, window_size: int, num_layers: int):
+    def __init__(self, input_size: int, hidden_size: int, num_layers: int):
         super(RNN_Model, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
-        self.window_size = window_size
         self.num_layers = num_layers
 
         self.rnn = nn.RNN(input_size, hidden_size, num_layers=num_layers, dropout=0.2, batch_first=True)
-        self.fc = nn.Linear(hidden_size, input_size)
+        self.fc = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
         h0 = torch.zeros((self.num_layers, self.hidden_size), device=x.device)

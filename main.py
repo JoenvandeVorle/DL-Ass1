@@ -17,7 +17,7 @@ from const import SCALING_FACTOR
 from visualize import visualize_training, visualize_predictions
 
 DATA_DIR = "data"
-CHECKPOINT = "checkpoints/FeedForward_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
+CHECKPOINT = "checkpoints/RNN_weights_WS5_NAdam_LR0.001_L1Loss_50.pth"
 FINAL_WINDOW_SIZE = 5
 
 #HYPERPARAMETERS = {
@@ -47,10 +47,10 @@ def do_train():
     )
 
     for window_size, optimizer, learning_rate, loss_function, epochs in hyperparameter_combinations:
-        train_data, val_data = load_data(window_size, device)
+        train_data, val_data = load_data(window_size, device, randomsplit=True)
 
-        # model = RNN_Model(1, 10, window_size, 3)
-        model = FeedForwardModel(window_size, 10, 3)
+        model = RNN_Model(1, 32, 3)
+        # model = FeedForwardModel(window_size, 10, 3)
 
         model.init_weights()
         model.to(device)
@@ -83,13 +83,13 @@ def do_train():
 
 
 def do_predict():
-    train_data, val_data = load_data(FINAL_WINDOW_SIZE, device)
-    # model = RNN_Model(1, 10, 1, 10)
-    model = FeedForwardModel(FINAL_WINDOW_SIZE, 10, 3)
+    train_data, val_data = load_data(FINAL_WINDOW_SIZE, device, randomsplit=False)
+    model = RNN_Model(1, 32, 3)
+    # model = FeedForwardModel(FINAL_WINDOW_SIZE, 10, 3)
     model.load_state_dict(torch.load(CHECKPOINT))
     model.to(device)
 
-    outputs, targets, mse, mae = predict(val_data, train_data, model)
+    outputs, targets, mse, mae = predict(val_data, model)
     print(f"Mean Squared Error: {mse}")
     print(f"Mean Absolute Error: {mae}")
 

@@ -5,8 +5,9 @@ from torch.utils.data import DataLoader
 from hyperparameters import Hyperparameters
 from log_level import LogLevel
 from numpy import arange
+from model import RNN_Model, FeedForwardModel
 
-PATIENCE = 15
+PATIENCE = 10
 
 def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
     epochs_since_last_improvement = 0
@@ -27,11 +28,9 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             # Forward pass
             hp.optimizer.zero_grad()
             outputs = model(input_points) # model returns shape (window_size, batch, 1)
-            # targets contains labels for all input points + the one at the end of the sequence that isn't used as input (y)
-            # targets = input_points[0, 1:]
-            # targets = torch.cat((targets, target))
-            # print (f"outputs shape: {outputs.shape} -- targets shape: {targets.shape}")
-            loss = hp.loss_function(outputs, target.unsqueeze(0))
+            if model.modelname == "FeedForward":
+                target = target.unsqueeze(0)
+            loss = hp.loss_function(outputs, target)
             train_loss += loss.item()
 
             # Backward pass and optimization
@@ -81,7 +80,8 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
         mae_losses = []
         for inputs, target in test_set:
             output = model(inputs)
-            target = target.unsqueeze(0)
+            if model.modelname == "FeedForward":
+                target = target.unsqueeze(0)
             loss = hp.loss_function(output, target)
             mse_loss = nn.MSELoss()(output, target)
             mae_loss = nn.L1Loss()(output, target)
@@ -94,7 +94,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
     return avg_loss, avg_mse_loss, avg_mae_loss
 
 
-def predict(test_set: DataLoader, train_data: DataLoader, model: nn.Module) -> tuple[list[float], list[float], float, float]:
+def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[float], float, float]:
     model.eval()
     mae_loss = nn.L1Loss()
     mse_loss = nn.MSELoss()
@@ -113,12 +113,11 @@ def predict(test_set: DataLoader, train_data: DataLoader, model: nn.Module) -> t
             else:
                 # Pop and push
                 outputs = outputs[:, 1:]  # Assuming outputs is a 2D tensor
-                # output_tensor = output.unsqueeze(1)  # Ensure the new output has the correct shape
+                if model.modelname == "RNN":
+                    output = output.unsqueeze(0)
                 outputs = torch.cat((outputs, output), dim=1)
                 input = torch.tensor(outputs)
-            # print (f"Input: {input}")
             output = model(input)
-            # print (f"Output: {output}")
             predictions.append(output.item())
             targets.append(target.item())
             mae_avg += mae_loss(output, data).item()
