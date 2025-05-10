@@ -62,8 +62,8 @@ def visualize_training(csv_path: str, output_dir: str = "plots") -> None:
 def visualize_predictions(predictions: list[float], targets: list[float], output_dir: str = "plots") -> None:
 
     plt.figure(figsize=(10, 6))
-    plt.plot(predictions, label="Predictions", color="blue", linewidth=2)
     plt.plot(targets, label="Targets", color="orange", linewidth=2)
+    plt.plot(predictions, label="Predictions", color="blue", linewidth=1)
     # plt.scatter(range(len(predictions)), predictions, label="Predictions", color="blue", s=10)
     # plt.scatter(range(len(targets)), targets, label="Targets", color="orange", s=10)
     plt.xlabel("Sample Index")
