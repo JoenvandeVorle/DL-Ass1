@@ -1,12 +1,15 @@
+import scipy
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+import numpy as np
 
 from hyperparameters import Hyperparameters
 from log_level import LogLevel
 from numpy import arange
+from dataloader import CustomDataset
 
-PATIENCE = 10
+PATIENCE = 15
 
 def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs: int, hp: Hyperparameters) -> dict:
     epochs_since_last_improvement = 0
@@ -28,7 +31,7 @@ def train(model: nn.Module, train_data: DataLoader, val_data: DataLoader, epochs
             hp.optimizer.zero_grad()
             outputs = model(input_points) # model returns shape (window_size, batch, 1)
             # targets contains labels for all input points + the one at the end of the sequence that isn't used as input (y)
-            loss = hp.loss_function(outputs, target)
+            loss = hp.loss_function(outputs, target.unsqueeze(0))
             train_loss += loss.item()
 
             # Backward pass and optimization
@@ -78,6 +81,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
         mae_losses = []
         for inputs, target in test_set:
             output = model(inputs)
+            target = target.unsqueeze(0)
             loss = hp.loss_function(output, target)
             mse_loss = nn.MSELoss()(output, target)
             mae_loss = nn.L1Loss()(output, target)
@@ -90,7 +94,7 @@ def test(test_set: DataLoader, model: nn.Module, hp: Hyperparameters) -> tuple[f
     return avg_loss, avg_mse_loss, avg_mae_loss
 
 
-def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[float], float, float]:
+def predict(test_set: DataLoader, train_data: DataLoader, model: nn.Module) -> tuple[list[float], list[float], float, float]:
     model.eval()
     mae_loss = nn.L1Loss()
     mse_loss = nn.MSELoss()
@@ -99,14 +103,76 @@ def predict(test_set: DataLoader, model: nn.Module) -> tuple[list[float], list[f
     with torch.no_grad():
         predictions = []
         targets = []
-        first_input = test_set.dataset[0][0]
+        i = 0
+        output = 0
+        outputs = None
         for data, target in test_set:
-            output = model(first_input.unsqueeze(0))
+            if i == 0:
+                input = data
+                outputs = input
+            else:
+                # Pop and push
+                outputs = outputs[:, 1:]  # Assuming outputs is a 2D tensor
+                # output_tensor = output.unsqueeze(1)  # Ensure the new output has the correct shape
+                outputs = torch.cat((outputs, output), dim=1)
+                input = torch.tensor(outputs)
+            # print (f"Input: {input}")
+            output = model(input)
+            # print (f"Output: {output}")
+            predictions.append(output.item())
+            targets.append(target.item())
+            mae_avg += mae_loss(output, data).item()
+            mse_avg += mse_loss(output, data).item()
+            i+= 1
+        mae_avg /= len(test_set)
+        mse_avg /= len(test_set)
+        if LogLevel.LEVEL >= LogLevel.Level.INFO:
+            print(f'MAE: {mae_avg:.4f}, MSE: {mse_avg:.4f}')
+    return predictions, targets, mae_avg, mse_avg
+
+def predict_test(test_set: DataLoader, train_data: DataLoader, model: nn.Module, window_size: int, device) -> tuple[list[float], list[float], float, float]:
+    model.eval()
+    mae_loss = nn.L1Loss()
+    mse_loss = nn.MSELoss()
+    mae_avg = 0
+    mse_avg = 0
+    with torch.no_grad():
+        predictions = []
+        targets = []
+        i = 0
+        output = 0
+        outputs = None
+
+        mat_data = scipy.io.loadmat('Xtrain.mat')
+        # Load and squeeze the actual data
+        data = mat_data['Xtrain']
+        laser_data = np.squeeze(data)
+        # normalization
+        laser_data = laser_data/300
+
+        dataset = CustomDataset(laser_data, window_size, device)
+
+        last_train_data, _ = dataset.__getitem__(-1)
+
+        for data, target in test_set:
+            if i == 0:
+                input = last_train_data.unsqueeze(0)
+                outputs = input
+            else:
+                # Pop and push
+                outputs = outputs[:, 1:]  # Assuming outputs is a 2D tensor
+                # output_tensor = output.unsqueeze(1)  # Ensure the new output has the correct shape
+                outputs = torch.cat((outputs, output), dim=1)
+                input = torch.tensor(outputs)
+            # print (f"Input: {input}")
+            output = model(input)
+            # print (f"Output: {output}")
             predictions.append(output.item())
             targets.append(target.item())
             first_input = output.unsqueeze(0)
             mae_avg += mae_loss(output, data).item()
             mse_avg += mse_loss(output, data).item()
+            i+= 1
         mae_avg /= len(test_set)
         mse_avg /= len(test_set)
         if LogLevel.LEVEL >= LogLevel.Level.INFO:
